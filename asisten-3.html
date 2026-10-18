@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Asisten Saya</title>
+<style>
+:root{--bg:#eef2f4;--sf:#fff;--tx:#14202a;--mu:#5d6b76;--ac:#0f766e;--ac2:#fff;--bd:#d5dde2;--er:#b42318;--erbg:#fdecea;color-scheme:light}
+:root[data-theme=dark]{--bg:#0d1315;--sf:#172023;--tx:#e6eef0;--mu:#8fa1a8;--ac:#4fd1c0;--ac2:#06201c;--bd:#26343a;--er:#ffb4ab;--erbg:#3a1a18;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;color:inherit;cursor:pointer}
+#app{height:100dvh;display:flex;flex-direction:column;max-width:720px;margin:0 auto;padding-top:env(safe-area-inset-top)}
+header{display:flex;align-items:center;gap:4px;padding:10px 12px;border-bottom:1px solid var(--bd)}
+header h1{flex:1;margin:0;font-size:18px;font-weight:650}
+.ib{width:40px;height:40px;border:0;border-radius:12px;background:transparent;display:grid;place-items:center}
+.ib:active,.ib:hover{background:var(--sf)}
+.ib svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#log{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
+.empty{margin:auto;text-align:center;color:var(--mu);max-width:28ch}
+.m{max-width:86%;padding:9px 13px;border-radius:16px;white-space:pre-wrap;overflow-wrap:anywhere;background:var(--sf);border:1px solid var(--bd)}
+.m.user{align-self:flex-end;background:var(--ac);color:var(--ac2);border-color:var(--ac);border-bottom-right-radius:4px}
+.m.model{align-self:flex-start;border-bottom-left-radius:4px}
+.m.sys{align-self:center;font-size:14px;color:var(--mu);background:transparent;border-style:dashed}
+.m.err{align-self:stretch;max-width:100%;background:var(--erbg);color:var(--er);border-color:var(--er);font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;user-select:text;-webkit-user-select:text}
+.m.err button{display:block;margin-top:8px;border:1px solid var(--er);background:transparent;color:var(--er);border-radius:8px;padding:4px 10px;font-size:13px}
+.m.wait{color:var(--mu)}
+#chips{display:flex;gap:8px;padding:8px 12px;overflow-x:auto;scrollbar-width:none}
+#chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--bd);background:var(--sf);border-radius:999px;padding:7px 14px;font-size:15px}
+.chip[aria-pressed=true]{background:var(--ac);color:var(--ac2);border-color:var(--ac)}
+#bar{display:flex;align-items:flex-end;gap:8px;padding:8px 12px calc(12px + env(safe-area-inset-bottom))}
+#in{flex:1;resize:none;max-height:140px;border:1px solid var(--bd);background:var(--sf);color:var(--tx);border-radius:22px;padding:11px 16px;font:inherit;outline:none}
+#in:focus,input:focus{border-color:var(--ac)}
+.rb{flex:none;width:48px;height:48px;border-radius:50%;border:0;display:grid;place-items:center}
+.rb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+#mic{background:var(--ac);color:var(--ac2);width:56px;height:56px}
+#mic.on{animation:p 1.2s infinite;background:var(--er);color:var(--erbg)}
+@keyframes p{0%{box-shadow:0 0 0 0 rgba(180,35,24,.5)}100%{box-shadow:0 0 0 16px rgba(180,35,24,0)}}
+#send{background:var(--sf);border:1px solid var(--bd)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:5}
+.ov.show{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:720px;max-height:88dvh;overflow:auto;border-radius:20px 20px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom))}
+.sheet h2{margin:0 0 6px;font-size:18px}
+.sheet h3{margin:18px 0 6px;font-size:15px;color:var(--mu);font-weight:600}
+.sheet p{margin:6px 0 12px;color:var(--mu);font-size:14px}
+input[type=password],input[type=text]{width:100%;border:1px solid var(--bd);background:var(--sf);color:var(--tx);border-radius:12px;padding:12px 14px;font:inherit;outline:none}
+.row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btn{border:1px solid var(--bd);background:var(--sf);border-radius:12px;padding:10px 16px}
+.btn.pri{background:var(--ac);color:var(--ac2);border-color:var(--ac);font-weight:600}
+.btn.dan{color:var(--er)}
+.li{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--bd)}
+.li div{flex:1;white-space:pre-wrap;overflow-wrap:anywhere}
+.li small{display:block;color:var(--mu)}
+.li button{border:0;background:transparent;color:var(--er);padding:2px 6px}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>Asisten Saya</h1>
+    <button class="ib" id="bTheme" aria-label="Ganti tema"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    <button class="ib" id="bVoice" aria-label="Matikan suara"></button>
+    <button class="ib" id="bList" aria-label="Catatan dan pengingat"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg></button>
+    <button class="ib" id="bSet" aria-label="Pengaturan"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </header>
+  <div id="log" aria-live="polite"></div>
+  <div id="chips">
+    <button class="chip" data-mode="ringkas" aria-pressed="false">Ringkas teks</button>
+    <button class="chip" data-mode="terjemah" aria-pressed="false">Terjemahkan</button>
+    <button class="chip" data-mode="ingat" aria-pressed="false">Buat pengingat</button>
+    <button class="chip" data-mode="catat" aria-pressed="false">Catatan</button>
+  </div>
+  <div id="bar">
+    <textarea id="in" rows="1" placeholder="Tulis pesan atau tekan mikrofon"></textarea>
+    <button class="rb" id="mic" aria-label="Bicara"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+    <button class="rb" id="send" aria-label="Kirim"><svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+  </div>
+</div>
+
+<div class="ov" id="setup"><div class="sheet">
+  <h2 id="setupT">Masukkan API key Gemini</h2>
+  <p>Key disimpan hanya di peramban ini (localStorage) dan dikirim langsung ke Google. Buat key gratis di aistudio.google.com/apikey.</p>
+  <input type="password" id="keyIn" placeholder="AIza..." autocomplete="off" autocapitalize="off" spellcheck="false">
+  <p style="margin-top:14px">Model Gemini (ubah jika model lama tidak tersedia lagi)</p>
+  <input type="text" id="modelIn" placeholder="gemini-3.8-flash" autocomplete="off" autocapitalize="off" spellcheck="false">
+  <div class="row">
+    <button class="btn pri" id="keySave">Simpan</button>
+    <button class="btn" id="keyCancel">Batal</button>
+  </div>
+  <div class="row" id="danger">
+    <button class="btn dan" id="clrHist">Hapus riwayat chat</button>
+    <button class="btn dan" id="clrKey">Hapus API key</button>
+  </div>
+</div></div>
+
+<div class="ov" id="panel"><div class="sheet">
+  <h2>Catatan dan pengingat</h2>
+  <h3>Pengingat</h3><div id="remList"></div>
+  <h3>Catatan</h3><div id="noteList"></div>
+  <p>Pengingat hanya berbunyi selama halaman ini terbuka.</p>
+  <div class="row"><button class="btn" id="panelClose">Tutup</button></div>
+</div></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const DEF_MODEL='gemini-3.8-flash';
+let MODEL=DEF_MODEL;try{MODEL=localStorage.getItem('asisten_model')||DEF_MODEL}catch(e){}
+const urlApi=()=>'https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(MODEL)+':generateContent';
+const K={key:'asisten_apikey',hist:'asisten_riwayat',mute:'asisten_bisu',notes:'asisten_catatan',rem:'asisten_pengingat',theme:'asisten_tema'};
+const get=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:JSON.parse(v)}catch(e){return d}};
+const put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let apiKey='';try{apiKey=localStorage.getItem(K.key)||''}catch(e){}
+let hist=get(K.hist,[]),notes=get(K.notes,[]),rems=get(K.rem,[]);
+let muted=get(K.mute,false),mode=null,busy=false;
+const log=$('#log'),input=$('#in');
+
+/* tema */
+const sysDark=matchMedia('(prefers-color-scheme: dark)').matches;
+function setTheme(t){document.documentElement.dataset.theme=t;put(K.theme,t)}
+setTheme(get(K.theme,sysDark?'dark':'light'));
+$('#bTheme').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+
+/* chat */
+const PH={ringkas:'Tempel teks yang ingin diringkas',terjemah:'Tulis teks yang ingin diterjemahkan',ingat:'Contoh: ingatkan saya minum obat besok jam 7 pagi',catat:'Tulis isi catatan'};
+function bubble(r,t){
+  const d=document.createElement('div');d.className='m '+r;d.textContent=t;
+  if(r==='err'){const b=document.createElement('button');b.textContent='Salin pesan error';
+    b.onclick=async()=>{try{await navigator.clipboard.writeText(t);b.textContent='Tersalin'}catch(e){b.textContent='Gagal menyalin, tahan dan pilih teks'}};d.appendChild(b)}
+  const e=log.querySelector('.empty');if(e)e.remove();
+  log.appendChild(d);log.scrollTop=log.scrollHeight;return d;
+}
+function add(r,t,store=true){
+  const d=bubble(r,t);
+  if(store&&r!=='wait'){hist.push({r,t});if(hist.length>100)hist=hist.slice(-100);put(K.hist,hist)}
+  return d;
+}
+function renderAll(){
+  log.innerHTML='';
+  if(!hist.length){log.innerHTML='<div class="empty">Halo! Ketik atau tekan mikrofon untuk mulai bicara.</div>';return}
+  hist.forEach(h=>bubble(h.r,h.t));
+}
+
+/* suara keluar */
+function refreshVoiceBtn(){
+  const b=$('#bVoice');b.setAttribute('aria-label',muted?'Nyalakan suara':'Matikan suara');
+  b.innerHTML=muted
+   ?'<svg viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6"/></svg>'
+   :'<svg viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+}
+$('#bVoice').onclick=()=>{muted=!muted;put(K.mute,muted);if(muted&&'speechSynthesis' in window)speechSynthesis.cancel();refreshVoiceBtn()};
+function bicara(t){
+  if(muted||!('speechSynthesis' in window))return;
+  speechSynthesis.cancel();
+  const clean=t.replace(/[*_#`>~]/g,'').replace(/\s+/g,' ').trim();
+  const parts=clean.match(/[^.!?\n]+[.!?]*/g)||[clean];
+  const v=speechSynthesis.getVoices().find(x=>x.lang.replace('_','-').toLowerCase().startsWith('id'));
+  parts.forEach(p=>{if(!p.trim())return;const u=new SpeechSynthesisUtterance(p.trim());u.lang='id-ID';if(v)u.voice=v;speechSynthesis.speak(u)});
+}
+if('speechSynthesis' in window)speechSynthesis.onvoiceschanged=()=>{};
+
+/* Gemini */
+async function gemini(contents,extra){
+  let res,raw;
+  try{
+    res=await fetch(urlApi(),{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':apiKey},body:JSON.stringify(Object.assign({contents},extra||{}))});
+    raw=await res.text();
+  }catch(e){throw new Error('Gagal terhubung ke API ('+e.name+'): '+e.message)}
+  if(!res.ok)throw new Error('HTTP '+res.status+' '+res.statusText+'\n'+raw);
+  let d;try{d=JSON.parse(raw)}catch(e){throw new Error('Respons bukan JSON:\n'+raw)}
+  const t=(d.candidates&&d.candidates[0]&&d.candidates[0].content&&d.candidates[0].content.parts||[]).map(p=>p.text||'').join('');
+  if(!t)throw new Error('Respons kosong dari API:\n'+raw);
+  return t;
+}
+const SYS={systemInstruction:{parts:[{text:'Kamu asisten pribadi berbahasa Indonesia. Jawab singkat, jelas, dan ramah. Jawabanmu akan dibacakan dengan suara, jadi hindari tabel, tanda markdown, dan daftar yang panjang.'}]}};
+
+/* mode tombol cepat */
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+  const m=c.dataset.mode;mode=mode===m?null:m;
+  document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.mode===mode)));
+  input.placeholder=mode?PH[mode]:'Tulis pesan atau tekan mikrofon';input.focus();
+});
+function resetMode(){mode=null;document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed','false'));input.placeholder='Tulis pesan atau tekan mikrofon'}
+const LABEL={ringkas:'Ringkas',terjemah:'Terjemahkan',ingat:'Pengingat',catat:'Catatan'};
+
+async function kirim(){
+  const text=input.value.trim();if(!text||busy)return;
+  if(!apiKey){openSetup(false);return}
+  const m=mode;input.value='';resize();resetMode();
+  if('speechSynthesis' in window)speechSynthesis.cancel();
+  add('user',(m?LABEL[m]+': ':'')+text);
+  if(m==='catat'){
+    notes.unshift({id:Date.now(),t:text,w:Date.now()});put(K.notes,notes);
+    const msg='Catatan disimpan.';add('model',msg);bicara(msg);return;
+  }
+  busy=true;const w=add('wait','Mengetik…',false);w.classList.add('wait');
+  try{
+    if(m==='ingat'){
+      const tz=Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const p='Sekarang: '+new Date().toString()+' (zona waktu '+tz+'). Ambil pengingat dari permintaan berikut. Balas hanya JSON {"judul":string,"waktu":string ISO 8601 dengan offset zona waktu lokal, atau null jika waktu tidak jelas}.\n\nPermintaan: '+text;
+      const out=await gemini([{role:'user',parts:[{text:p}]}],{generationConfig:{responseMimeType:'application/json'}});
+      let j;try{j=JSON.parse(out.replace(/```json|```/g,'').trim())}catch(e){throw new Error('Jawaban bukan JSON yang valid:\n'+out)}
+      const ms=j.waktu?Date.parse(j.waktu):NaN;
+      w.remove();
+      if(isNaN(ms)||ms<=Date.now()){const msg='Waktu pengingat belum jelas atau sudah lewat. Coba lagi dengan menyebut hari dan jam, misalnya “besok jam 7 pagi”.';add('model',msg);bicara(msg)}
+      else{
+        rems.push({id:Date.now(),t:j.judul||text,at:ms,done:false});put(K.rem,rems);
+        if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();
+        const msg='Pengingat dibuat: '+(j.judul||text)+', pada '+new Date(ms).toLocaleString('id-ID',{dateStyle:'full',timeStyle:'short'})+'. Pengingat berbunyi selama halaman ini terbuka.';
+        add('model',msg);bicara(msg);
+      }
+    }else{
+      const prompts={
+        ringkas:'Ringkas teks berikut dalam bahasa Indonesia, singkat dan padat:\n\n'+text,
+        terjemah:'Terjemahkan teks berikut. Jika berbahasa Indonesia, terjemahkan ke bahasa Inggris; jika bukan, terjemahkan ke bahasa Indonesia. Beri hasil terjemahan saja:\n\n'+text
+      };
+      const past=hist.slice(0,-1).filter(h=>h.r==='user'||h.r==='model').slice(-16);
+      const contents=past.map(h=>({role:h.r,parts:[{text:h.t}]}));
+      contents.push({role:'user',parts:[{text:m?prompts[m]:text}]});
+      const out=await gemini(contents,SYS);
+      w.remove();add('model',out);bicara(out);
+    }
+  }catch(e){w.remove();add('err',e.message)}
+  busy=false;
+}
+$('#send').onclick=kirim;
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();kirim()}});
+function resize(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,140)+'px'}
+input.addEventListener('input',resize);
+
+/* mikrofon */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null,listening=false;
+$('#mic').onclick=()=>{
+  if(!SR){add('err','Peramban ini tidak mendukung pengenalan suara (Web Speech API). Gunakan Chrome di Android atau desktop.',false);return}
+  if(listening){rec.stop();return}
+  if('speechSynthesis' in window)speechSynthesis.cancel();
+  rec=new SR();rec.lang='id-ID';rec.interimResults=true;rec.continuous=false;
+  rec.onstart=()=>{listening=true;$('#mic').classList.add('on')};
+  rec.onresult=e=>{let s='';for(const r of e.results)s+=r[0].transcript;input.value=s;resize()};
+  rec.onerror=e=>add('err','Error mikrofon: '+e.error+(e.message?' - '+e.message:''),false);
+  rec.onend=()=>{listening=false;$('#mic').classList.remove('on');if(input.value.trim())kirim()};
+  try{rec.start()}catch(e){add('err','Gagal memulai mikrofon: '+e.message,false)}
+};
+
+/* pengingat */
+setInterval(()=>{
+  const now=Date.now();let ch=false;
+  rems.forEach(r=>{if(!r.done&&r.at<=now){r.done=true;ch=true;
+    const msg='Pengingat: '+r.t;add('model',msg);bicara(msg);
+    if('Notification' in window&&Notification.permission==='granted'){try{new Notification('Pengingat',{body:r.t})}catch(e){}}
+    if(navigator.vibrate)navigator.vibrate([200,100,200]);
+  }});
+  if(ch)put(K.rem,rems);
+},10000);
+
+/* panel catatan dan pengingat */
+function li(title,sub,onDel){
+  const d=document.createElement('div');d.className='li';
+  const c=document.createElement('div');c.textContent=title;
+  if(sub){const s=document.createElement('small');s.textContent=sub;c.appendChild(s)}
+  const b=document.createElement('button');b.textContent='Hapus';b.onclick=onDel;
+  d.append(c,b);return d;
+}
+const fmt=ms=>new Date(ms).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'});
+function renderPanel(){
+  const rl=$('#remList'),nl=$('#noteList');rl.innerHTML='';nl.innerHTML='';
+  if(!rems.length)rl.innerHTML='<p>Belum ada pengingat.</p>';
+  rems.slice().sort((a,b)=>a.at-b.at).forEach(r=>rl.appendChild(li(r.t,fmt(r.at)+(r.done?' (sudah berbunyi)':''),()=>{rems=rems.filter(x=>x.id!==r.id);put(K.rem,rems);renderPanel()})));
+  if(!notes.length)nl.innerHTML='<p>Belum ada catatan.</p>';
+  notes.forEach(n=>nl.appendChild(li(n.t,fmt(n.w),()=>{notes=notes.filter(x=>x.id!==n.id);put(K.notes,notes);renderPanel()})));
+}
+$('#bList').onclick=()=>{renderPanel();$('#panel').classList.add('show')};
+$('#panelClose').onclick=()=>$('#panel').classList.remove('show');
+
+/* pengaturan dan API key */
+function openSetup(canCancel){
+  $('#setupT').textContent=apiKey?'Pengaturan':'Masukkan API key Gemini';
+  $('#keyIn').value=apiKey;$('#modelIn').value=MODEL;
+  $('#keyCancel').style.display=canCancel?'':'none';
+  $('#danger').style.display=canCancel?'':'none';
+  $('#setup').classList.add('show');
+}
+$('#bSet').onclick=()=>openSetup(!!apiKey);
+$('#keyCancel').onclick=()=>$('#setup').classList.remove('show');
+$('#keySave').onclick=()=>{
+  const k=$('#keyIn').value.trim();if(!k)return;
+  apiKey=k;MODEL=$('#modelIn').value.trim().replace(/^models\//,'')||DEF_MODEL;try{localStorage.setItem(K.key,k);localStorage.setItem('asisten_model',MODEL)}catch(e){add('err','Gagal menyimpan ke localStorage: '+e.message,false)}
+  $('#setup').classList.remove('show');
+};
+$('#clrHist').onclick=()=>{hist=[];put(K.hist,hist);renderAll();$('#setup').classList.remove('show')};
+$('#clrKey').onclick=()=>{apiKey='';try{localStorage.removeItem(K.key)}catch(e){}openSetup(false)};
+
+/* mulai */
+refreshVoiceBtn();renderAll();
+if(!apiKey)openSetup(false);
+</script>
+</body>
+</html>
